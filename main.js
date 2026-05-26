@@ -24,6 +24,12 @@ function createWindow() {
   })
 
   mainWindow.loadURL(ZENITH_URL)
+
+  // Intercept window.open dan buka di browser eksternal
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
   
   // Buka Google OAuth di browser default
   mainWindow.webContents.on('will-navigate', (event, url) => {
@@ -81,4 +87,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+// Buka URL dari perintah ZENITH
+const { ipcMain } = require('electron')
+ipcMain.on('open-url', (event, url) => {
+  shell.openExternal(url)
 })
