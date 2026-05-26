@@ -1,0 +1,36 @@
+{
+  "name": "zenith-desktop",
+  "version": "1.0.0",
+  "description": "ZENITH AI — Autonomous Intelligence OS",
+  "main": "main.js",
+  "author": "Azvicky Fadzry",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.zenith.ai",
+    "productName": "ZENITH",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "dmg": {
+      "title": "ZENITH AI"
+    }
+  },
+  "devDependencies": {
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12"
+  }
+}
