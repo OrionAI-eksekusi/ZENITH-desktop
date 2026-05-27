@@ -17,7 +17,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true
+      webSecurity: true,
+      preload: path.join(__dirname, 'preload.js')
     },
     icon: path.join(__dirname, 'assets', 'icon.png'),
     title: 'ZENITH — Autonomous Intelligence OS'
@@ -91,6 +92,32 @@ app.on('window-all-closed', () => {
 
 // Buka URL dari perintah ZENITH
 const { ipcMain } = require('electron')
+const { exec } = require('child_process')
+
 ipcMain.on('open-url', (event, url) => {
   shell.openExternal(url)
+})
+
+// Map nama aplikasi ke path Mac
+const APP_MAP = {
+  'excel': 'Microsoft Excel',
+  'word': 'Microsoft Word',
+  'powerpoint': 'Microsoft PowerPoint',
+  'spotify': 'Spotify',
+  'vscode': 'Visual Studio Code',
+  'notes': 'Notes',
+  'calendar': 'Calendar',
+  'finder': 'Finder',
+  'terminal': 'Terminal',
+  'safari': 'Safari',
+  'chrome': 'Google Chrome',
+}
+
+ipcMain.on('open-app', (event, appName) => {
+  const name = APP_MAP[appName.toLowerCase()]
+  if (name) {
+    exec(`open -a "${name}"`, (err) => {
+      if (err) console.log('[ZENITH] App not found:', name)
+    })
+  }
 })
