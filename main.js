@@ -26,6 +26,15 @@ function createWindow() {
 
   mainWindow.loadURL(ZENITH_URL)
 
+  // Permission microphone otomatis
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (['media', 'microphone', 'audioCapture'].includes(permission)) {
+      callback(true)
+    } else {
+      callback(false)
+    }
+  })
+
   // Intercept window.open dan buka di browser eksternal
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
