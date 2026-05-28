@@ -3,7 +3,7 @@ const path = require('path')
 const { exec } = require('child_process')
 
 let mainWindow, tray
-const ZENITH_URL = 'https://www.getzenith.id'
+const ZENITH_URL = 'https://www.getzenith.id/dashboard'
 const CHROME_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 const APP_MAP = {
@@ -29,7 +29,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200, height: 800, minWidth: 800, minHeight: 600,
     titleBarStyle: 'hiddenInset', backgroundColor: '#050814',
-    webPreferences: { nodeIntegration: false, contextIsolation: true, webSecurity: true, preload: path.join(__dirname, 'preload.js'), sandbox: false },
+    webPreferences: { nodeIntegration: false, contextIsolation: true, webSecurity: true, preload: path.join(__dirname, 'preload.js'), sandbox: false, webviewTag: true },
     icon: path.join(__dirname, 'assets', 'icon.png'),
     title: 'ZENITH — Autonomous Intelligence OS'
   })
