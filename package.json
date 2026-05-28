@@ -30,7 +30,13 @@
     },
     "dmg": {
       "title": "ZENITH AI"
-    }
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*",
+      "package.json"
+    ]
   },
   "devDependencies": {
     "electron": "^36.4.0",
