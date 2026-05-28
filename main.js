@@ -35,6 +35,14 @@ function createWindow() {
   })
   mainWindow.loadURL(ZENITH_URL)
   mainWindow.webContents.on('did-finish-load', () => console.log('[MAIN] loaded ->', mainWindow.webContents.getURL()))
+
+  // Kalau desktop navigasi ke root (/), langsung paksa ke /dashboard
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url === 'https://www.getzenith.id/' || url === 'https://www.getzenith.id') {
+      event.preventDefault()
+      mainWindow.loadURL('https://www.getzenith.id/dashboard')
+    }
+  })
   mainWindow.webContents.session.setPermissionRequestHandler((wc, p, cb) => cb(['media', 'microphone', 'audioCapture'].includes(p)))
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('zenith-app://')) { openApp(decodeURIComponent(url.replace('zenith-app://', '').replace(/\/$/, ''))); return { action: 'deny' } }
