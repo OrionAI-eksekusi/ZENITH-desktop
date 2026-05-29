@@ -14,7 +14,12 @@ const APP_MAP = {
 
 function openApp(n) {
   const name = APP_MAP[(n||'').toLowerCase()]
-  if (name) exec('open -a "' + name + '"', err => { if(err) console.log('app tidak ketemu:', name) })
+  if (!name) return
+  if (process.platform === 'darwin') {
+    exec('open -a "' + name + '"', err => { if(err) console.log('[MAIN] app tidak ketemu Mac:', name) })
+  } else if (process.platform === 'win32') {
+    exec('start "" "' + name + '"', err => { if(err) console.log('[MAIN] app tidak ketemu Win:', name) })
+  }
 }
 
 function openZenithWindow(url) {
