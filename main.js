@@ -1,3 +1,4 @@
+const { autoUpdater } = require('electron-updater')
 const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } = require('electron')
 const path = require('path')
 const { exec } = require('child_process')
@@ -97,6 +98,35 @@ function createTray() {
 app.whenReady().then(() => {
   createWindow()
   createTray()
+
+  // Auto update — cek update 5 detik setelah launch
+  if (app.isPackaged) {
+    autoUpdater.autoDownload = true
+    autoUpdater.autoInstallOnAppQuit = false
+
+    setTimeout(() => {
+      autoUpdater.checkForUpdates().catch(err => {
+        console.log('[MAIN] update check failed:', err.message)
+      })
+    }, 5000)
+
+    autoUpdater.on('update-downloaded', (info) => {
+      const { dialog } = require('electron')
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'ZENITH Update Tersedia',
+        message: 'Versi ' + info.version + ' sudah diunduh. Restart sekarang untuk menginstall update?',
+        buttons: ['Restart & Update', 'Nanti'],
+        defaultId: 0
+      }).then(result => {
+        if (result.response === 0) autoUpdater.quitAndInstall()
+      })
+    })
+
+    autoUpdater.on('error', err => {
+      console.log('[MAIN] auto-update error:', err.message)
+    })
+  }
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
 

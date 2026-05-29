@@ -1,6 +1,6 @@
 {
   "name": "zenith-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ZENITH AI \u2014 Autonomous Intelligence OS",
   "main": "main.js",
   "author": "Azvicky Fadzry",
@@ -36,10 +36,18 @@
       "preload.js",
       "assets/**/*",
       "package.json"
-    ]
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "OrionAI-eksekusi",
+      "repo": "ZENITH-desktop"
+    }
   },
   "devDependencies": {
     "electron": "^36.4.0",
     "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
   }
 }
