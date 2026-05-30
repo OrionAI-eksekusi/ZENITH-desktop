@@ -1,5 +1,5 @@
 const { autoUpdater } = require('electron-updater')
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } = require('electron')
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, desktopCapturer, screen: electronScreen, shell } = require('electron')
 const path = require('path')
 const { exec } = require('child_process')
 
@@ -134,6 +134,90 @@ app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(
 
 ipcMain.on('open-url', (e, url) => openZenithWindow(url))
 ipcMain.on('open-app', (e, n) => openApp(n))
+ipcMain.handle('capture-screen', async () => {
+  const fs = require('fs')
+  if (process.platform === 'darwin') {
+    try {
+      const tmpFile = '/tmp/zenith_' + Date.now() + '.png'
+      await new Promise((resolve) => { exec('screencapture -x -t png ' + tmpFile, () => resolve(null)) })
+      await new Promise(r => setTimeout(r, 600))
+      if (fs.existsSync(tmpFile)) {
+        const data = fs.readFileSync(tmpFile)
+        const base64 = data.toString('base64')
+        try { fs.unlinkSync(tmpFile) } catch {}
+        // Kompres: resize ke 1280px, convert ke JPEG
+        const { nativeImage } = require('electron')
+        const img = nativeImage.createFromBuffer(data)
+        const resized = img.resize({ width: 1280 })
+        const compressed = resized.toJPEG(75)
+        try { fs.unlinkSync(tmpFile) } catch {}
+        return 'data:image/jpeg;base64,' + compressed.toString('base64')
+      }
+    } catch(e) { console.log('[ZENITH] screencapture error:', e.message) }
+  }
+  try {
+    const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1440, height: 900 } })
+    if (sources.length > 0) return sources[0].thumbnail.toDataURL()
+  } catch(e) { console.log('[ZENITH] desktopCapturer error:', e.message) }
+  return null
+})
+
+ipcMain.handle('type-text', async (event, text) => {
+  return new Promise((resolve) => {
+    const platform = process.platform
+    const safe = text.replace(/"/g, '\"').replace(/'/g, "\'")
+    if (platform === 'darwin') {
+      exec(`osascript -e 'tell application "System Events" to keystroke "${safe}"'`, () => resolve(true))
+    } else {
+      exec(`powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${safe}')"`, () => resolve(true))
+    }
+  })
+})
+
+ipcMain.handle('press-enter', async () => {
+  return new Promise((resolve) => {
+    const platform = process.platform
+    if (platform === 'darwin') {
+      exec(`osascript -e 'tell application "System Events" to key code 36'`, () => resolve(true))
+    } else {
+      exec(`powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')"`, () => resolve(true))
+    }
+  })
+})
+
+ipcMain.handle('get-screen-size', () => {
+  const display = electronScreen.getPrimaryDisplay()
+  return display.size
+})
+
+ipcMain.handle('click-at', async (event, { x, y }) => {
+  return new Promise((resolve) => {
+    const px = Math.round(x)
+    const py = Math.round(y)
+    if (process.platform === 'darwin') {
+      exec(`osascript -e 'tell application "System Events"' -e 'click at {${px}, ${py}}' -e 'end tell'`, (err) => {
+        setTimeout(() => resolve(!err), 150)
+      })
+    } else {
+      const ps = `Add-Type @"
+using System.Runtime.InteropServices;
+public class M {
+  [DllImport("user32.dll")] public static extern bool SetCursorPos(int x,int y);
+  [DllImport("user32.dll")] public static extern void mouse_event(int f,int x,int y,int c,int e);
+}
+"@; [M]::SetCursorPos(${px},${py}); [M]::mouse_event(2,0,0,0,0); [M]::mouse_event(4,0,0,0,0)`
+      exec(`powershell -command "${ps}"`, (err) => {
+        setTimeout(() => resolve(!err), 150)
+      })
+    }
+  })
+})
+
+ipcMain.handle('open-browser', async (event, url) => {
+  await shell.openExternal(url)
+  return true
+})
+
 ipcMain.on('clap-detected', () => {
   if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.show(); mainWindow.focus() }
 })
