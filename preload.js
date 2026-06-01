@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   pressEnter: () => ipcRenderer.invoke('press-enter'),
   getScreenSize: () => ipcRenderer.invoke('get-screen-size'),
   clickAt: (x, y) => ipcRenderer.invoke('click-at', { x, y }),
-  openBrowser: (url) => ipcRenderer.invoke('open-browser', url)
+  openBrowser: (url) => ipcRenderer.invoke('open-browser', url),
+  onActivate: (cb) => ipcRenderer.on('activate-zenith', cb)
 })
