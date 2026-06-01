@@ -1,5 +1,5 @@
 const { autoUpdater } = require('electron-updater')
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, desktopCapturer, screen: electronScreen, shell } = require('electron')
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, desktopCapturer, screen: electronScreen, shell, globalShortcut } = require('electron')
 const path = require('path')
 const { exec } = require('child_process')
 
@@ -128,8 +128,13 @@ app.whenReady().then(() => {
     })
   }
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
+
+  globalShortcut.register('CommandOrControl+Shift+Z', () => {
+    if (mainWindow) { mainWindow.show(); mainWindow.focus(); mainWindow.webContents.send('activate-zenith') }
+  })
 })
 
+app.on('will-quit', () => globalShortcut.unregisterAll())
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 
 ipcMain.on('open-url', (e, url) => openZenithWindow(url))
